@@ -191,18 +191,12 @@ def get_sa_cifar10_poisoned_data(
                     image = self.transform(image)
                 return image, label, index
     
-    
-    if not random:
-        transform_train = Compose([
-            ToTensor(),
-            Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-            RandomHorizontalFlip(),
-        ])
-    else:
-        transform_train = Compose([
-            ToTensor(),
-            Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ])
+
+    transform_train = Compose([
+        ToTensor(),
+        Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        RandomHorizontalFlip(),
+    ])
     
     transform_test = Compose([
         ToTensor(),
