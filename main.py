@@ -300,10 +300,6 @@ def main() -> None:
     ]
 
     def update_results(csv_path, **metrics):
-        """
-        Append a row with the supplied metrics.
-        Unreported columns are left blank.
-        """
 
         if os.path.getsize(csv_path) == 0:
             with open(csv_path, "w", newline="") as f:
@@ -514,9 +510,9 @@ def main() -> None:
                 and os.path.exists(scheduler_path)
                 and not cfg.force
             ):
-                model.load_state_dict(torch.load(model_path))
-                optimizer.load_state_dict(torch.load(optimizer_path))
-                scheduler.load_state_dict(torch.load(scheduler_path))
+                model.load_state_dict(torch.load(model_path, map_location=device))
+                optimizer.load_state_dict(torch.load(optimizer_path, map_location=device))
+                scheduler.load_state_dict(torch.load(scheduler_path, map_location=device))
                 print(f"Loaded model trained for {cfg.ep_bl_base} epochs from saved files")
             else:
                 print(f"Training model for {cfg.ep_bl_base} epochs before capturing batch‐level updates...")
@@ -654,9 +650,9 @@ def main() -> None:
                 and os.path.exists(scheduler_path)
                 and not cfg.force
             ):
-                model.load_state_dict(torch.load(model_path))
-                optimizer.load_state_dict(torch.load(optimizer_path))
-                scheduler.load_state_dict(torch.load(scheduler_path))
+                model.load_state_dict(torch.load(model_path, map_location=device))
+                optimizer.load_state_dict(torch.load(optimizer_path, map_location=device))
+                scheduler.load_state_dict(torch.load(scheduler_path, map_location=device))
                 print(f"Loaded model trained for {cfg.ep_sl_base} epochs")
             else:
                 print(f"Training for {cfg.ep_sl_base} epochs before capturing sample‐level updates...")

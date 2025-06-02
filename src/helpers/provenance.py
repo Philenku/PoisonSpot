@@ -310,9 +310,8 @@ def capture_first_level_multi_epoch_batch_sample_weight_updates(
 
 
 
-                sur_model.eval()  
-                output = sur_model(clean_batch)
                 sur_model.train(mode = training_mode)  
+                output = sur_model(clean_batch)
             
                     
                     
