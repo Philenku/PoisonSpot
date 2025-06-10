@@ -59,7 +59,10 @@ Below is a list of arguments you can use with PoisonSpot and their functions:
 | `scenario`           | Scenario to use for the experiment (`fine_tune` or `from_scratch`) | `"from_scratch"`                   |
 | `get_result`         | Get results from previous runs                               | `False`                                   |
 | `force`              | Force the run overwriting previous results                   | `False`                                   |
-| `threshold`          | Custom threshold for scoring suspected samples                      | `0.5`                              |
+| `custom_threshold`   | Custom threshold for scoring suspected samples               | `0.5`                              |
+| `Threshold_type`     | Kmeans, Gaussian, or custom threshold choice                | `Kmeans`                            |
+| `k_1`                | First phase threshold                                        | `1`                             | 
+| `k_2`                | Second phase threshold                                        | `0.0001`                             | 
 | `sample_from_test`   | Sample from the test set                                     | `False`                                   |
 | `cv_model`           | Model to use for cross-validation                            | `"RandomForest"`                   |
 | `groups`             | Number of groups to use for cross-validation                 | `5`                                |
