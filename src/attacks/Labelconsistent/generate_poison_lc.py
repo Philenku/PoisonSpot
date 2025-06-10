@@ -1,13 +1,8 @@
 '''
 This is the test code of poisoned training under LabelConsistent.
 '''
-
-import sys
 import os
-import os.path as osp
 
-
-import cv2
 import numpy as np
 import torch
 import torch.nn as nn
@@ -37,26 +32,7 @@ def get_lc_cifar10_poisoned_data(
 ):
     """
     Generate and return poisoned CIFAR-10 data using Label-Consistent attack.
-
-    Args:
-        poison_ratio (float): Fraction of training samples to be poisoned.
-        target_class (int, optional): Class label to assign for triggered samples. Defaults to 2.
-        datasets_root_dir (str, optional): Root directory for dataset storage. Defaults to './src/data/'.
-        model (torch.nn.Module, optional): Model architecture for training and attack. Defaults to ResNet(18).
-        clean_model_path (str, optional): Path to pretrained clean model weights. Defaults to './src/saved_models/resnet18_200_clean.pth'.
-        eps (int, optional): Perturbation magnitude in pixel intensity for poisoning. Defaults to 8.
-        vis (int, optional): Visibility scale for poison perturbations (0-255). Defaults to 255.
-        global_seed (int, optional): Random seed for reproducibility. Defaults to 545.
-        gpu_id (int, optional): CUDA device identifier. Defaults to 0.
-
-    Returns:
-        poisoned_train_dataset (TensorDataset): Training set with label-consistent poisons.
-        clean_test_dataset (TensorDataset): Original test set without modifications.
-        poisoned_test_dataset (TensorDataset): Test set with applied label-consistent triggers.
-        poison_indices (np.ndarray): Indices of samples in the training set that were poisoned.
     """
-    CUDA_VISIBLE_DEVICES = str(gpu_id)
-    os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
 
     poison_ratio = poison_ratio /100
     
@@ -115,7 +91,6 @@ def get_lc_cifar10_poisoned_data(
 
     schedule = {
         'device': 'GPU',
-        'CUDA_VISIBLE_DEVICES': CUDA_VISIBLE_DEVICES,
         'GPU_num': 1,
 
         'benign_training': False, 
@@ -187,27 +162,9 @@ def get_lc_image_net_poisoned_data(
 ):
     """
     Generate and return poisoned ImageNet data using Label-Consistent attack.
-
-    Args:
-        poison_ratio (float): Fraction of ImageNet samples to be poisoned.
-        target_class (int, optional): Target label for backdoored images. Defaults to 2.
-        datasets_root_dir (str, optional): Dataset directory path. Defaults to './src/data/'.
-        model (torch.nn.Module, optional): Model architecture for attack and training. Defaults to ResNet(18).
-        clean_model_path (str, optional): Path to pretrained ImageNet weights. Defaults to './src/saved_models/resnet18_200_clean.pth'.
-        eps (int, optional): Perturbation strength for poison. Defaults to 8.
-        global_seed (int, optional): Seed for reproducibility. Defaults to 545.
-        gpu_id (int, optional): GPU device ID. Defaults to 0.
-
-    Returns:
-        poisoned_train_dataset (Dataset): Training dataset with label-consistent backdoor samples.
-        clean_val_dataset (Dataset): Validation dataset without modifications.
-        poisoned_val_dataset (Dataset): Validation set with poison triggers applied.
-        poison_indices (np.ndarray): Array of indices representing poisoned samples.
     """
         
     CUDA_VISIBLE_DEVICES = str(gpu_id)
-    os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
-
     poison_ratio = poison_ratio / 100
     class TinyImageNetDataset(Dataset):
         def __init__(self, root, transform=None, train=True, target_transform = None,  annotations_file=None, is_val=False, class_to_idx=None, num_classes=100, seed=42):
@@ -272,7 +229,6 @@ def get_lc_image_net_poisoned_data(
     transform = transforms.Compose([
         transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
         transforms.RandomHorizontalFlip(),
-        # transforms.RandomCrop(224, padding=4),
         transforms.ToTensor(),
         transforms.Normalize(mean=MEAN_RGB, std=STDDEV_RGB)
     ])
@@ -311,7 +267,6 @@ def get_lc_image_net_poisoned_data(
 
     block_size = 12
 
-    # Define the positions
     draw_block(pattern, weight, scaled_size - 1 * block_size, scaled_size - 1 * block_size, block_size, vis)
     draw_block(pattern, weight, scaled_size - 1 * block_size, scaled_size - 3 * block_size, block_size, vis)
     draw_block(pattern, weight, scaled_size - 3 * block_size, scaled_size - 1 * block_size, block_size, vis)
@@ -339,7 +294,7 @@ def get_lc_image_net_poisoned_data(
         'CUDA_VISIBLE_DEVICES': CUDA_VISIBLE_DEVICES,
         'GPU_num': 1,
 
-        'benign_training': False, # Train Attacked Model
+        'benign_training': False, 
         'batch_size': 128,
         'num_workers': 8,
 

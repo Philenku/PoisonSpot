@@ -1,6 +1,6 @@
 
 # which attack to run
-attack: ht 
+attack: sa 
 
 # dataset / model choices 
 dataset: slt10 
@@ -29,8 +29,8 @@ bs_bl: 64
 bs_sl: 64
 
 # attack parameters
-target_class: 4
-source_class: 3
+target_class: 1
+source_class: 0
 pr_tgt: 50
 pr_sus: 50
 eps: 16
@@ -47,16 +47,16 @@ get_result: false
 force: false
 
 # misc
-gpu_id: 0
+gpu_id: 1
 global_seed: 545
-lr: 0.001
+lr: 0.0001
 opt: adam
 training_mode: false
 sample_from_test: true
 cv_model: RandomForest
 groups: 5
 custom_threshold: 0.5 
-threshold_type: kmeans 
+threshold_type: gaussian 
 k_1: 1
 k_2: 0.0001 
 random: false

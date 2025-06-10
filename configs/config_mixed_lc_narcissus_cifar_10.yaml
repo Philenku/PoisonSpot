@@ -17,7 +17,7 @@ exp:
 
 # training schedule
 epochs: 200
-ep_bl: 10
+ep_bl: 1
 ep_bl_base: 200
 ep_sl: 10
 ep_sl_base: 200
@@ -54,5 +54,8 @@ training_mode: true
 sample_from_test: false
 cv_model: RandomForest
 groups: 5
-threshold: 0.5
+custom_threshold: 0.5 
+threshold_type: kmeans 
+k_1: 1
+k_2: 0.0001 
 random: false

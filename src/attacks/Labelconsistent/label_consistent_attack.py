@@ -3,6 +3,7 @@ This is the implement of Label-consistent backdoor attacks [1].
 
 Reference:
 [1] Label-consistent backdoor attacks. arXiv preprint arXiv:1912.02771, 2019.
+[2] https://github.com/THUYimingLi/BackdoorBox: used code from this repo.
 '''
 
 
@@ -33,23 +34,13 @@ class AddTrigger:
         pass
 
     def add_trigger(self, img):
-        """Add watermarked trigger to image.
-
-        Args:
-            img (torch.Tensor): shape (C, H, W).
-
-        Returns:
-            torch.Tensor: Poisoned image, shape (C, H, W).
+        """ Add watermarked trigger to image.
         """
         return (self.weight * img + self.res).type(torch.uint8)
 
 
 class AddDatasetFolderTrigger(AddTrigger):
-    """Add watermarked trigger to DatasetFolder images.
-
-    Args:
-        pattern (torch.Tensor): shape (C, H, W) or (H, W).
-        weight (torch.Tensor): shape (C, H, W) or (H, W).
+    """ Add watermarked trigger to DatasetFolder images.
     """
 
     def __init__(self, pattern, weight):
@@ -75,12 +66,6 @@ class AddDatasetFolderTrigger(AddTrigger):
 
     def __call__(self, img):
         """Get the poisoned image.
-
-        Args:
-            img (PIL.Image.Image | numpy.ndarray | torch.Tensor): If img is numpy.ndarray or torch.Tensor, the shape should be (H, W, C) or (H, W).
-
-        Returns:
-            torch.Tensor: The poisoned image.
         """
 
         def add_trigger(img):
@@ -133,10 +118,6 @@ class AddDatasetFolderTrigger(AddTrigger):
 
 class AddMNISTTrigger(AddTrigger):
     """Add watermarked trigger to MNIST image.
-
-    Args:
-        pattern (None | torch.Tensor): shape (1, 28, 28) or (28, 28).
-        weight (None | torch.Tensor): shape (1, 28, 28) or (28, 28).
     """
 
     def __init__(self, pattern, weight):
@@ -172,10 +153,6 @@ class AddMNISTTrigger(AddTrigger):
 
 class AddCIFAR10Trigger(AddTrigger):
     """Add watermarked trigger to CIFAR10 image.
-
-    Args:
-        pattern (None | torch.Tensor): shape (3, 32, 32) or (32, 32).
-        weight (None | torch.Tensor): shape (3, 32, 32) or (32, 32).
     """
 
     def __init__(self, pattern, weight):
@@ -254,13 +231,6 @@ class PoisonedDatasetFolder(DatasetFolder):
         self.poisoned_target_transform.transforms.insert(poisoned_target_transform_index, ModifyTarget(y_target))
 
     def __getitem__(self, index):
-        """
-        Args:
-            index (int): Index
-
-        Returns:
-            tuple: (sample, target) where target is class_index of the target class.
-        """
         path, target = self.samples[index]
         sample = self.loader(path)
 
@@ -314,9 +284,6 @@ class PoisonedMNIST(MNIST):
 
     def __getitem__(self, index):
         img, target = self.data[index], int(self.targets[index])
-
-        # doing this so that it is consistent with all other datasets
-        # to return a PIL Image
         img = Image.fromarray(img.numpy(), mode='L')
 
         if index in self.poisoned_set:
@@ -372,8 +339,6 @@ class PoisonedCIFAR10(CIFAR10):
 
     def __getitem__(self, index):
         img, target = self.data[index], int(self.targets[index])
-        # doing this so that it is consistent with all other datasets
-        # to return a PIL Image
         img = Image.fromarray(img)
 
         if index in self.poisoned_set:
@@ -397,7 +362,6 @@ class PoisonedDataset(Dataset):
                  weight,
                  poisoned_transform_index,
                  poisoned_target_transform_index):
-        # No need to call super().__init__() because you're directly inheriting from Dataset, which doesn't require initialization
         self.benign_dataset = benign_dataset
         self.data = np.array(benign_dataset.images)
         self.targets = np.array(benign_dataset.labels)
@@ -482,13 +446,6 @@ class CreatePoisonedTargetDataset(DatasetFolder):
         self.poisoned_transform.transforms.insert(poisoned_transform_index, AddDatasetFolderTrigger(pattern, weight))
 
     def __getitem__(self, index):
-        """
-        Args:
-            index (int): Index
-
-        Returns:
-            tuple: (sample, target) where target is class_index of the target class.
-        """
         path, target = self.samples[index]
         sample = self.loader(path)
 
@@ -500,14 +457,13 @@ class CreatePoisonedTargetDataset(DatasetFolder):
         if isinstance(sample, np.ndarray):
             sample = Image.fromarray(sample)
             
-        # print(self.poisoned_transform)    
         if img_index in self.poisoned_set:
-            sample = self.poisoned_transform(sample) # add trigger to image
+            sample = self.poisoned_transform(sample)
         else:
             if self.transform is not None:
                 sample = self.transform(sample)
 
-        if self.target_transform is not None: # The process of target transform is the same. 
+        if self.target_transform is not None:
             target = self.target_transform(target)
 
         return sample, target, img_index
@@ -573,9 +529,6 @@ class LabelConsistent():
             # Set python seed
             random.seed(seed)
 
-            # Set numpy seed (However, some applications and libraries may use NumPy Random Generator objects,
-            # not the global RNG (https://numpy.ooutputs = self.model(adv_images)rg/doc/stable/reference/random/generator.html), and those will
-            # need to be seeded consistently as well.)
             np.random.seed(seed)
 
             os.environ['PYTHONHASHSEED'] = str(seed)
@@ -583,11 +536,8 @@ class LabelConsistent():
             if deterministic:
                 torch.backends.cudnn.benchmark = False
                 torch.use_deterministic_algorithms(True)
-                # torch.use_deterministic_algorithms(True, warn_only=True)
                 torch.backends.cudnn.deterministic = True
                 os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
-                # Hint: In some versions of CUDA, RNNs and LSTM networks may have non-deterministic behavior.
-                # If you want to set them deterministic, see torch.nn.RNN() and torch.nn.LSTM() for details and workarounds.
 
         def _seed_worker(self, worker_id):
             worker_seed = torch.initial_seed() % 2**32
@@ -757,14 +707,6 @@ class LabelConsistent():
             
         class CustomDatasetFolder(DatasetFolder):
             def __getitem__(self, index: int):
-                """
-                Args:
-                    index (int): Index
-
-                Returns:
-                    tuple: (sample, target, index) where target is class_index of the target class,
-                    and index is the index of the sample.
-                """
                 path, target = self.samples[index]
                 sample = self.loader(path)
                                 

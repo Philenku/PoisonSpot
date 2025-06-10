@@ -1,6 +1,11 @@
 '''
 This is the code for implementing PoisonSpot Defense against Narcissus_poison_spot on CIFAR-10 using Integrated Gradients.
+
+Reference:
+[1] https://github.com/reds-lab/Narcissus: Narcissus: Clean-label Backdoor Attack. Used code from this repository to generate the trigger.
+
 '''
+
 import os
 import os.path as osp
 
@@ -21,7 +26,6 @@ import random
 from src.models.resnet import ResNet
 
 
-os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
 
@@ -40,30 +44,12 @@ def get_narcissus_cifar10_poisoned_data(
     model=ResNet(18),
     eps=16,
     global_seed=545,
-    multi_test=3,
+    multi_test=1,
     gpu_id=0
 ):
     """
     Generate and return poisoned CIFAR-10 data using the Narcissus attack framework.
-
-    Args:
-        poison_ratio (float): Fraction of CIFAR-10 training samples to poison.
-        target_class (int, optional): Label to assign to poisoned samples. Defaults to 2.
-        datasets_root_dir (str, optional): Root directory for CIFAR-10 data. Defaults to './src/data/'.
-        model (torch.nn.Module, optional): Model architecture for attack crafting. Defaults to ResNet(18).
-        eps (float, optional): Maximum L-infinity perturbation magnitude. Defaults to 16.
-        global_seed (int, optional): Seed for reproducibility. Defaults to 545.
-        multi_test (int, optional): Number of multi-step test iterations for poison validation. Defaults to 3.
-        gpu_id (int, optional): CUDA device identifier. Defaults to 0.
-
-    Returns:
-        poisoned_train_dataset (TensorDataset): Training set with Narcissus-poisoned samples.
-        clean_test_dataset (TensorDataset): Original CIFAR-10 test set.
-        poisoned_test_dataset (TensorDataset): Test set with Narcissus trigger applied.
-        poison_indices (np.ndarray): Indices of training samples that were poisoned.
     """
-    CUDA_VISIBLE_DEVICES = str(gpu_id)
-    os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
     torch.manual_seed(global_seed)
     np.random.seed(global_seed)
     random.seed(global_seed)

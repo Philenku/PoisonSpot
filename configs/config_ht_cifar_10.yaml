@@ -18,9 +18,9 @@ exp:
 
 # training schedule
 epochs: 10
-ep_bl: 10
+ep_bl: 5
 ep_bl_base: 0
-ep_sl: 10
+ep_sl: 25
 ep_sl_base: 0
 
 # batch sizes
@@ -47,7 +47,7 @@ get_result: false
 force: false
 
 # misc
-gpu_id: 1
+gpu_id: 0
 global_seed: 545
 lr: 0.01
 opt: sgd
@@ -55,5 +55,8 @@ training_mode: true
 sample_from_test: true
 cv_model: RandomForest
 groups: 5
-threshold: 0.5
+custom_threshold: 0.5 
+threshold_type: kmeans 
+k_1: 1
+k_2: 0.0001 
 random: false

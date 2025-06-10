@@ -18,7 +18,7 @@ exp:
 
 # training schedule
 epochs: 200
-ep_bl: 10
+ep_bl: 1
 ep_bl_base: 200
 ep_sl: 10
 ep_sl_base: 200
@@ -38,10 +38,10 @@ eps: 16
 vis: 255
 
 # which phases to run
-batch_level: false
+batch_level: true
 clean_training: false
-poisoned_training: false
-sample_level: false
+poisoned_training: true
+sample_level: true
 score_samples: true
 retrain: true
 get_result: false
@@ -53,8 +53,12 @@ global_seed: 545
 lr: 0.1
 opt: sgd
 training_mode: true
-sample_from_test: false
+sample_from_test: true
 cv_model: RandomForest
-groups: 5
-threshold: 0.5
-random: false
+groups: 5 
+custom_threshold: 0.5 
+threshold_type: kmeans 
+k_1: 1
+k_2: 0.0001  
+random: false 
+

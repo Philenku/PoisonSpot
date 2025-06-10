@@ -1,6 +1,5 @@
 
 import os
-import os.path as osp
 from art.utils import load_cifar10
 
 
@@ -21,9 +20,6 @@ from PIL import Image
 from numpy import asarray
 from skimage.transform import resize
 
-
-CUDA_VISIBLE_DEVICES = '0'
-os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
 global_seed = 545
 deterministic = True
 torch.manual_seed(global_seed)
@@ -106,10 +102,10 @@ def get_lc_narcissus_cifar_10_poisoned_data(
 
     schedule = {
         'device': 'GPU',
-        'CUDA_VISIBLE_DEVICES': CUDA_VISIBLE_DEVICES,
+        'CUDA_VISIBLE_DEVICES': str(gpu_id),
         'GPU_num': 1,
 
-        'benign_training': False, # Train Attacked Model
+        'benign_training': False, 
         'batch_size': 128,
         'num_workers': 8,
 
@@ -168,13 +164,6 @@ def get_lc_narcissus_cifar_10_poisoned_data(
             
     poison_ratio = 0.005
     multi_test = 3
-
-    # transform_tensor = transforms.Compose([
-    #     transforms.ToTensor(),
-    #     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-    # ])
-    # poi_ori_train = torchvision.datasets.CIFAR10(root=datasets_root_dir, train=True, download=True, transform=transform_tensor)
-    # poi_ori_test = torchvision.datasets.CIFAR10(root=datasets_root_dir, train=False, download=True, transform=transform_tensor)
 
     poi_ori_train = label_consistent.poisoned_train_dataset
     poi_ori_test = label_consistent.test_dataset[0]
@@ -248,19 +237,12 @@ def get_lc_narcissus_sa_cifar_10_poisoned_data(
     transform_train = Compose([
         ToTensor(),
         Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        # RandomCrop(32, padding=4),  
         RandomHorizontalFlip(),
     ])
 
 
     class CustomDataset(Dataset):
         def __init__(self, data, targets, transform=None, target_transform=None):
-            """
-            Args:
-                data (numpy array or torch tensor): Array of data (e.g., images).
-                targets (numpy array or torch tensor): Array of targets (e.g., labels).
-                transform (callable, optional): Optional transform to be applied on a sample.
-            """
             self.data = data
             self.targets = targets
             self.transform = transform
@@ -271,13 +253,6 @@ def get_lc_narcissus_sa_cifar_10_poisoned_data(
             return len(self.data)
 
         def __getitem__(self, idx):
-            """
-            Args:
-                idx (int): Index of the sample to retrieve.
-            
-            Returns:
-                tuple: (image, label) where image is the data at index `idx` and label is the corresponding target.
-            """
             img = self.data[idx]
             label = self.targets[idx]
 
@@ -289,7 +264,6 @@ def get_lc_narcissus_sa_cifar_10_poisoned_data(
 
             return img, label
         
-    # trainset = dataset(datasets_root_dir, train=True, transform=transform_train, download=True)
     trainset = CustomDataset(x_poison.transpose(0, 2, 3, 1), y_poison.argmax(axis=1), transform=transform_train)
 
     transform_test = Compose([
@@ -299,7 +273,7 @@ def get_lc_narcissus_sa_cifar_10_poisoned_data(
     testset = dataset(datasets_root_dir, train=False, transform=transform_test, download=True)
 
     adv_model = ResNet(18)
-    adv_ckpt = torch.load("saved_models/resnet18_200_clean.pth")
+    adv_ckpt = torch.load("src/saved_models/resnet18_200_clean.pth")
     adv_model.load_state_dict(adv_ckpt)
 
     pattern = torch.zeros((32, 32), dtype=torch.uint8)
@@ -332,10 +306,10 @@ def get_lc_narcissus_sa_cifar_10_poisoned_data(
 
     schedule = {
         'device': 'GPU',
-        'CUDA_VISIBLE_DEVICES': CUDA_VISIBLE_DEVICES,
+        'CUDA_VISIBLE_DEVICES': str(gpu_id),
         'GPU_num': 1,
 
-        'benign_training': False, # Train Attacked Model
+        'benign_training': False,
         'batch_size': 128,
         'num_workers': 8,
 
@@ -361,7 +335,6 @@ def get_lc_narcissus_sa_cifar_10_poisoned_data(
     max_pixel = 255
     poisoned_rate = poison_ratio/(1-poison_ratio)
     patch_size = 3
-    vis = 255
 
     label_consistent = LabelConsistent(
         train_dataset=trainset,

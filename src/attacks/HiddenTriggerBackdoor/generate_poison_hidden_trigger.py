@@ -7,7 +7,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from art.attacks.poisoning.backdoor_attack import PoisoningAttackBackdoor
-from art.attacks.poisoning import HiddenTriggerBackdoor
 from art.attacks.poisoning import perturbations
 from torch.utils.data import TensorDataset
 import random
@@ -25,32 +24,10 @@ def get_ht_cifar10_poisoned_data(
     dataset_path='./src/data/',
     clean_model_path="./src/saved_models/htbd_art_model_200.pth",
     global_seed=545,
-    gpu_id=0
-):  
-    """
-    Generate and return poisoned CIFAR-10 datasets for training and testing.
+    ):   
+    
+    """ Generate and return poisoned CIFAR-10 dataset with a hidden trigger backdoor.  """
 
-    Arguments:
-        poison_ratio (float): Fraction of training samples to poison.
-        target_class (int): Label to assign to poisoned inputs in test set.
-        source_class (int): Label of clean inputs to target with backdoor.
-        model (torch.nn.Module): Predefined PyTorch model architecture.
-        dataset_path (str): Directory to save or load poisoned data.
-        clean_model_path (str): File path to save or load the clean pretrained model.
-        global_seed (int): Seed for reproducibility 
-        gpu_id (int): GPU identifier for CUDA environment variable.
-
-    Returns:
-        poisoned_train_dataset (TensorDataset): Poisoned training set with indices.
-        test_dataset (TensorDataset): Original test set.
-        poisoned_test_dataset (TensorDataset): Test set with backdoor triggers.
-        poison_indices (ndarray): Indices of samples poisoned in training set.
-    """  
-    
-    
-    CUDA_VISIBLE_DEVICES = str(gpu_id)
-    os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
-    
     torch.manual_seed(global_seed)
     np.random.seed(global_seed)
     random.seed(global_seed)
@@ -182,26 +159,8 @@ def get_ht_stl10_poisoned_data(
     gpu_id=0
 ):
     """
-    Generate and return poisoned STL-10 datasets with a hidden trigger backdoor.
-
-    Args:
-        poison_ratio (float): Proportion of STL-10 training samples to poison.
-        target_class (int): Label to assign to backdoored test inputs.
-        source_class (int): Original class label to target with backdoor.
-        model (torch.nn.Module): Model architecture for attack and evaluation.
-        dataset_path (str): Directory for downloading and saving STL-10 data.
-        clean_model_path (str): Path to load or save clean pretrained model weights.
-        global_seed (int): Seed for numpy, torch, and random reproducibility.
-        gpu_id (int): CUDA device identifier for environment configuration.
-
-    Returns:
-        TensorDataset: Poisoned training dataset with backdoored samples.
-        TensorDataset: Clean test dataset.
-        TensorDataset: Triggered test dataset labeled with the target class.
-        numpy.ndarray: Indices of poisoned samples in the training set.
+    Generate and return poisoned STL-10 dataset with a hidden trigger backdoor.
     """    
-    CUDA_VISIBLE_DEVICES = str(gpu_id)
-    os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
     
     torch.manual_seed(global_seed)
     np.random.seed(global_seed)
@@ -210,8 +169,6 @@ def get_ht_stl10_poisoned_data(
     transform = transforms.Compose([
         transforms.Resize((224, 224)),  
         transforms.ToTensor(),  
-        # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Normalize images
-        # transforms.RandomHorizontalFlip(),
     ])
 
     # Load the STL-10 dataset
@@ -333,22 +290,6 @@ def get_ht_imagenet_poisoned_data(
 ):
     """
     Generate and return poisoned Tiny ImageNet datasets using a hidden trigger backdoor.
-
-    Args:
-        poison_ratio (float): Proportion of Tiny ImageNet training samples to poison.
-        target_class (int): Label for backdoored validation samples.
-        source_class (int): Original class index to apply backdoor against.
-        model (torch.nn.Module): Vision Transformer or other model for training and attack.
-        dataset_path (str): Path to Tiny ImageNet directory structure.
-        clean_model_path (str): Path to load or save the clean pretrained model checkpoint.
-        global_seed (int): Random seed for reproducibility in sampling and torch.
-        gpu_id (int): GPU device ID for environment setup.
-
-    Returns:
-        Dataset: CustomDataset for poisoned Tiny ImageNet training set.
-        TensorDataset: Clean validation set without backdoor triggers.
-        TensorDataset: Triggered validation dataset labeled with target_class.
-        numpy.ndarray: Array of indices indicating which samples were poisoned.
     """
         
 
@@ -421,7 +362,6 @@ def get_ht_imagenet_poisoned_data(
 
     transform_train = transforms.Compose([
         transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
-        # transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(mean=MEAN_RGB, std=STDDEV_RGB)
     ])
@@ -430,7 +370,6 @@ def get_ht_imagenet_poisoned_data(
     data_dir = dataset_path + "tiny-imagenet-200/"
     val_annotations_file = dataset_path + "tiny-imagenet-200/val/val_annotations.txt"
     bs = 32
-    num_classes = 100
     train_set = TinyImageNetDataset(data_dir + "train", transform=transform_train, num_classes=100, seed=42)
     val_set = TinyImageNetDataset(data_dir + "val", transform=transform_train, annotations_file=val_annotations_file, is_val=True, class_to_idx=train_set.class_to_idx)
 
@@ -478,13 +417,6 @@ def get_ht_imagenet_poisoned_data(
     
     class CustomDataset(Dataset):
         def __init__(self, images, labels, indices, transform=None):
-            """
-            Args:
-                images (numpy.ndarray): Array of images.
-                labels (numpy.ndarray): Array of labels corresponding to the images.
-                indices (numpy.ndarray): Array of indices (optional, useful for tracking original order).
-                transform (callable, optional): Optional transform to be applied on a sample.
-            """
             self.images = images
             self.labels = labels
             self.indices = indices

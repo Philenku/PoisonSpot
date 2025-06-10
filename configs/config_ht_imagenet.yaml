@@ -16,10 +16,10 @@ prov_path: ./src/Training_Prov_Data/
 exp: 
 
 # training schedule
-epochs: 10
-ep_bl: 10
+epochs: 5
+ep_bl: 1
 ep_bl_base: 0
-ep_sl: 10
+ep_sl: 25
 ep_sl_base: 0
 
 
@@ -51,10 +51,13 @@ force: false
 gpu_id: 1
 global_seed: 545
 lr: 0.001
-opt: adam
+opt: adam 
 training_mode: false
 sample_from_test: true
-cv_model: RandomForest
+cv_model: RandomForest 
 groups: 5
-threshold: 0.5
+custom_threshold: 0.5 
+threshold_type: gaussian 
+k_1: 40
+k_2: 0.0001 
 random: false

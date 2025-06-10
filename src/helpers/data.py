@@ -5,13 +5,16 @@ import random
 
 __all__ = ["get_loaders_from_dataset", "get_random_poison_idx"]
 
+
 def get_loaders_from_dataset(
     poisoned_train_dataset,
-    test_dataset, 
-    poisoned_test_dataset, 
-    batch_size, target_class, 
+    test_dataset,
+    poisoned_test_dataset,
+    batch_size,
+    target_class, 
     indexes_to_remove = []
     ):
+    
     
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
     if type(poisoned_test_dataset) == dict:
@@ -43,21 +46,20 @@ def get_loaders_from_dataset(
     
     
     return poisoned_train_loader, test_loader, poisoned_test_loader, target_class_indices
-    
+
+
+
 
 
 def get_random_poison_idx(
-    percentage, ignore_set, random_poison_idx,
-    target_class_all, poison_amount, seed,
-):
-    """
-    Randomly pick additional *clean* indices from the target class so that the
-    suspected set has   (#poison / percentage)  total size.
-    """
-    np.random.seed(seed)
-    random.seed(seed)
-    extra = int(poison_amount * (100 / percentage - 1))
-    clean_pool = list(set(target_class_all) - ignore_set)
-    return random.sample(clean_pool, extra) + list(random_poison_idx)
-
-    
+    percentage, 
+    ignore_set, 
+    random_poison_idx, 
+    target_class_all, 
+    poison_amount, 
+    global_seed
+    ):
+    np.random.seed(global_seed)
+    random.seed(global_seed)
+    random_poison_per = random.sample(list(set(target_class_all) - ignore_set), int(poison_amount*(100/percentage - 1))) + list(random_poison_idx)
+    return random_poison_per
