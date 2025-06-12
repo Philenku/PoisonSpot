@@ -22,8 +22,6 @@ from numpy import asarray
 from skimage.transform import resize
 
 
-CUDA_VISIBLE_DEVICES = '0'
-os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
 global_seed = 545
 deterministic = True
 torch.manual_seed(global_seed)
@@ -103,10 +101,9 @@ def get_lc_narcissus_cifar_10_poisoned_data(
     weight[-3:,:3] = 1.0
     weight[-3:,-3:] = 1.0
 
-
     schedule = {
         'device': 'GPU',
-        'CUDA_VISIBLE_DEVICES': CUDA_VISIBLE_DEVICES,
+        # 'CUDA_VISIBLE_DEVICES': CUDA_VISIBLE_DEVICES,
         'GPU_num': 1,
 
         'benign_training': False, # Train Attacked Model
@@ -299,7 +296,7 @@ def get_lc_narcissus_sa_cifar_10_poisoned_data(
     testset = dataset(datasets_root_dir, train=False, transform=transform_test, download=True)
 
     adv_model = ResNet(18)
-    adv_ckpt = torch.load("saved_models/resnet18_200_clean.pth")
+    adv_ckpt = torch.load("src/saved_models/resnet18_200_clean.pth")
     adv_model.load_state_dict(adv_ckpt)
 
     pattern = torch.zeros((32, 32), dtype=torch.uint8)
@@ -332,7 +329,7 @@ def get_lc_narcissus_sa_cifar_10_poisoned_data(
 
     schedule = {
         'device': 'GPU',
-        'CUDA_VISIBLE_DEVICES': CUDA_VISIBLE_DEVICES,
+        # 'CUDA_VISIBLE_DEVICES': CUDA_VISIBLE_DEVICES,
         'GPU_num': 1,
 
         'benign_training': False, # Train Attacked Model
@@ -368,7 +365,7 @@ def get_lc_narcissus_sa_cifar_10_poisoned_data(
         test_dataset=testset,
         model= ResNet(18),
         adv_model=adv_model,
-        adv_dataset_dir=f'datasets/CIFAR-10_eps{eps}_alpha{alpha}_steps{steps}_poisoned_rate{poison_ratio:.2f}_seed{global_seed}_mixed',
+        adv_dataset_dir= datasets_root_dir+ f'CIFAR-10_eps{eps}_alpha{alpha}_steps{steps}_poisoned_rate{poison_ratio:.2f}_seed{global_seed}_mixed',
         loss=nn.CrossEntropyLoss(),
         y_target=2,
         poisoned_rate=poisoned_rate,

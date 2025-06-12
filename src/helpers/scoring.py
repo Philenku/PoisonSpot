@@ -329,7 +329,9 @@ def score_poisoned_samples(
     percentage,
     attack,
     figure_path,
-    threshold=0.6
+    threshold=0.6,
+    threshold_type = "Kmeans",
+    k_2 = 0.0001  
 ):
     """
     Score and visualize the likelihood of samples being poisoned based on weight update differences.
@@ -365,7 +367,7 @@ def score_poisoned_samples(
     plt.figure()
     plt.plot(range(len(average_original_feature_importances)), average_original_feature_importances, label='Feature Importances', alpha=0.5, color='blue')
     plt.savefig(figure_path + f"/Feature_importances.png")
-    outliers = np.where(average_original_feature_importances > 0.001)[0]
+    outliers = np.where(average_original_feature_importances > k_2)[0]
     print("len outliers: ", len(outliers))  
     best_rel_feature = len(outliers)
     
@@ -546,7 +548,14 @@ def score_poisoned_samples(
         sus_mean = sus_max = sus_mean_max = None
 
     custom_threshold_mean,kmeans_threshold_mean, gaussian_threshold_mean,  tpr_kmeans, fpr_kmeans, tpr_gaussian, fpr_gaussian = plot_scores(pos_mean, clean_mean, sus_mean, f"/SL Mean {attack} pr {poison_ratio} percentage {percentage} constant threshold")
-    best_config = "mean_kmeans"
+    if threshold_type == "kmeans":
+        best_config = "kmeans"
+    elif threshold_type == "gaussian":
+        best_config = "gaussian"
+    elif threshold_type == "custom":
+        best_config = "custom"
+    else:
+        raise ValueError(f"Threshold type {threshold_type} is not supported")
     
     if attack == "narcissus_lc" or attack == "narcissus_lc_sa":
         for key in poison_indices_all:
@@ -557,9 +566,9 @@ def score_poisoned_samples(
                 
     if len(sus_clean_prediction_indices) > 0:
         values = {
-        "mean_gaussian": np.concatenate([pos_mean, sus_mean]) > gaussian_threshold_mean,
-        "mean_kmeans": np.concatenate([pos_mean, sus_mean]) > kmeans_threshold_mean,
-        "mean_custom": np.concatenate([pos_mean, sus_mean]) > custom_threshold_mean,
+        "gaussian": np.concatenate([pos_mean, sus_mean]) > gaussian_threshold_mean,
+        "kmeans": np.concatenate([pos_mean, sus_mean]) > kmeans_threshold_mean,
+        "custom": np.concatenate([pos_mean, sus_mean]) > custom_threshold_mean,
         }
         
         sus_prediction_indices = np.concatenate([pos_prediction_indices, sus_clean_prediction_indices])
@@ -568,9 +577,9 @@ def score_poisoned_samples(
         
     else:
         values = {
-        "mean_gaussian": pos_mean > gaussian_threshold_mean,
-        "mean_kmeans": pos_mean > kmeans_threshold_mean,
-        "mean_custom": pos_mean > custom_threshold_mean,
+        "gaussian": pos_mean > gaussian_threshold_mean,
+        "kmeans": pos_mean > kmeans_threshold_mean,
+        "custom": pos_mean > custom_threshold_mean,
         }
         
         print("values: ", len(pos_mean[pos_mean > gaussian_threshold_mean]))

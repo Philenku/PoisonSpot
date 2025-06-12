@@ -55,8 +55,6 @@ def get_lc_cifar10_poisoned_data(
         poisoned_test_dataset (TensorDataset): Test set with applied label-consistent triggers.
         poison_indices (np.ndarray): Indices of samples in the training set that were poisoned.
     """
-    CUDA_VISIBLE_DEVICES = str(gpu_id)
-    os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
 
     poison_ratio = poison_ratio /100
     
@@ -111,7 +109,7 @@ def get_lc_cifar10_poisoned_data(
     weight[-3:,:3] = 1.0
     weight[-3:,-3:] = 1.0
 
-        
+    CUDA_VISIBLE_DEVICES = None   
 
     schedule = {
         'device': 'GPU',
@@ -205,8 +203,7 @@ def get_lc_image_net_poisoned_data(
         poison_indices (np.ndarray): Array of indices representing poisoned samples.
     """
         
-    CUDA_VISIBLE_DEVICES = str(gpu_id)
-    os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
+    CUDA_VISIBLE_DEVICES = None
 
     poison_ratio = poison_ratio / 100
     class TinyImageNetDataset(Dataset):

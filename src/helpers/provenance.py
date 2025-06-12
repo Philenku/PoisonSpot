@@ -163,20 +163,20 @@ def capture_first_level_multi_epoch_batch_sample_weight_updates(
 
         
         for images, labels, indices in pbar:
-            images, labels, indices = images.to(device), labels.to(device), indices                       
+            images, labels, indices = images.to(device).float(), labels.to(device).long(), indices                       
             
             start_time = time.time()
             
             original_weights = copy.deepcopy(model.state_dict())
             
-            model.eval()                     
-            model.zero_grad()
+            # model.eval()                     
+            model.train(mode = training_mode)
             optimizer.zero_grad()
             logits = model(images)
             loss = criterion(logits, labels)
-            model.train(mode = training_mode)
             loss.backward()
             optimizer.step()
+            
             
             _, predicted = torch.max(logits.data, 1)
             acc = (predicted == labels).sum().item()/labels.size(0)
@@ -254,7 +254,7 @@ def capture_first_level_multi_epoch_batch_sample_weight_updates(
 
                 
                 sur_model.load_state_dict(original_weights)
-                sur_optimizer.load_state_dict(sur_optimizer_state)
+                # sur_optimizer.load_state_dict(sur_optimizer_state)
             
                 
                 sur_optimizer.zero_grad()
@@ -292,7 +292,7 @@ def capture_first_level_multi_epoch_batch_sample_weight_updates(
                 
                 
                 sur_model.load_state_dict(original_weights)
-                sur_optimizer.load_state_dict(sur_optimizer_state)
+                # sur_optimizer.load_state_dict(sur_optimizer_state)
                 
                 
                 sur_optimizer.zero_grad()
@@ -334,7 +334,7 @@ def capture_first_level_multi_epoch_batch_sample_weight_updates(
                 
                 
                 sur_model.load_state_dict(original_weights)
-                sur_optimizer.load_state_dict(sur_optimizer_state)
+                # sur_optimizer.load_state_dict(sur_optimizer_state)
                 
                 sur_optimizer.zero_grad()
 
@@ -377,7 +377,7 @@ def capture_first_level_multi_epoch_batch_sample_weight_updates(
                 
                 sus_params = np.maximum(sus_params, np.abs(temp_sus - temp_clean_2))
                 clean_params = np.maximum(clean_params, np.abs(temp_clean - temp_clean_2))
-                
+                                
                 step7_time = time.time() - start_time
                 step7_time_avg += step7_time
                 step7_time_avg += step7_time
@@ -424,7 +424,7 @@ def capture_first_level_multi_epoch_batch_sample_weight_updates(
             model.eval()
             correct, total = 0, 0
             for i, (images, labels) in enumerate(poisoned_test_loader):
-                images, labels = images.to(device), labels.to(device)
+                images, labels = images.to(device).float(), labels.to(device).long()
                 with torch.no_grad():
                     logits = model(images)
                     out_loss = criterion(logits,labels)
@@ -464,11 +464,11 @@ def capture_first_level_multi_epoch_batch_sample_weight_updates(
             print("Number of important features after intersection:", len(important_features_avg), "Epoch:", epoch)
         plt.figure()
         plt.scatter(range(sus_params.shape[0]), z_scores, label='Z Scores', alpha=0.5, color='blue')
-        plt.savefig(figure_path + f"Max_diff.png")
+        plt.savefig(figure_path + f"/Max_diff.png")
         
         plt.figure()
         plt.scatter(range(sus_params.shape[0]), differences, label='Differences', alpha=0.5, color='red')
-        plt.savefig(figure_path + f"differences.png")
+        plt.savefig(figure_path + f"/differences.png")
     return important_features_avg
 
 
@@ -616,7 +616,7 @@ def capture_sample_level_weight_updates_idv(
     
         
         for images, labels, indices in pbar:
-            images, labels, indices = images.to(device), labels.to(device), indices                    
+            images, labels, indices = images.to(device).float(), labels.to(device).long(), indices                      
             
             start_time = time.time()
             
@@ -911,7 +911,7 @@ def capture_sample_level_weight_updates_idv(
             model.eval()
             correct, total = 0, 0
             for i, (images, labels) in enumerate(poisoned_test_loader):
-                images, labels = images.to(device), labels.to(device)
+                images, labels = images.to(device).float(), labels.to(device).long()
                 with torch.no_grad():
                     logits = model(images)
                     out_loss = criterion(logits,labels)

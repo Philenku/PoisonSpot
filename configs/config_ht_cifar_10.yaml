@@ -18,7 +18,7 @@ exp:
 
 # training schedule
 epochs: 10
-ep_bl: 10
+ep_bl: 5
 ep_bl_base: 0
 ep_sl: 10
 ep_sl_base: 0
@@ -37,17 +37,17 @@ eps: 16
 vis: 255
 
 # which steps to run
-batch_level: true
+batch_level: false
 clean_training: false
-poisoned_training: true
-sample_level: true
+poisoned_training: false
+sample_level: false
 score_samples: true
 retrain: true
 get_result: false
 force: false
 
 # misc
-gpu_id: 1
+gpu_id: 0
 global_seed: 545
 lr: 0.01
 opt: sgd
@@ -55,5 +55,8 @@ training_mode: true
 sample_from_test: true
 cv_model: RandomForest
 groups: 5
-threshold: 0.5
+custom_threshold: 0.5 
+threshold_type: kmeans 
+k_1: 1
+k_2: 0.0001 
 random: false

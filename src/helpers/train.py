@@ -55,7 +55,7 @@ def train(
         loss_meter = AverageMeter()
         pbar = tqdm(poisoned_train_loader, total=len(poisoned_train_loader)) 
         for images, labels, indices in pbar:
-            images, labels, indices = images.to(device), labels.to(device), indices
+            images, labels, indices = images.to(device).float() , labels.to(device).long(), indices            
             model.zero_grad()
             optimizer.zero_grad()
             logits = model(images)
@@ -94,7 +94,7 @@ def train(
             model.eval()
             correct, total = 0, 0
             for i, (images, labels) in enumerate(poisoned_test_loader):
-                images, labels = images.to(device), labels.to(device)
+                images, labels = images.to(device).float(), labels.to(device).long()                
                 with torch.no_grad():
                     logits = model(images)
                     out_loss = criterion(logits,labels)
@@ -149,7 +149,7 @@ def evaluate_model(model, test_loader, poisoned_test_loader, criterion, device):
     else:
         correct, total = 0, 0
         for i, (images, labels) in enumerate(poisoned_test_loader):
-            images, labels = images.to(device), labels.to(device)
+            images, labels = images.to(device).float(), labels.to(device).long()                
             with torch.no_grad():
                 logits = model(images)
                 out_loss = criterion(logits,labels)
@@ -162,7 +162,7 @@ def evaluate_model(model, test_loader, poisoned_test_loader, criterion, device):
 
     correct_clean, total_clean = 0, 0
     for i, (images, labels) in enumerate(test_loader):
-        images, labels = images.to(device), labels.to(device)
+        images, labels = images.to(device).float(), labels.to(device)
         with torch.no_grad():
             logits = model(images)
             out_loss = criterion(logits,labels)

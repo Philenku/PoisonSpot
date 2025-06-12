@@ -21,7 +21,6 @@ import random
 from src.models.resnet import ResNet
 
 
-os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
 
@@ -40,7 +39,7 @@ def get_narcissus_cifar10_poisoned_data(
     model=ResNet(18),
     eps=16,
     global_seed=545,
-    multi_test=3,
+    multi_test=1,
     gpu_id=0
 ):
     """
@@ -62,8 +61,6 @@ def get_narcissus_cifar10_poisoned_data(
         poisoned_test_dataset (TensorDataset): Test set with Narcissus trigger applied.
         poison_indices (np.ndarray): Indices of training samples that were poisoned.
     """
-    CUDA_VISIBLE_DEVICES = str(gpu_id)
-    os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
     torch.manual_seed(global_seed)
     np.random.seed(global_seed)
     random.seed(global_seed)
@@ -265,7 +262,7 @@ def get_narcissus_cifar10_poisoned_data(
 
     best_noise = narcissus_trigger
     test_non_target = list(np.where(np.array(test_label)!=target_class)[0])
-    test_non_target_change_image_label = poison_image_label(poi_ori_test,test_non_target,best_noise.cpu()*multi_test,target_class,None)
+    test_non_target_change_image_label = poison_image_label(poi_ori_test,test_non_target,best_noise.cpu(),target_class,None)
     print('Poison test dataset size is:',len(test_non_target_change_image_label))
 
 

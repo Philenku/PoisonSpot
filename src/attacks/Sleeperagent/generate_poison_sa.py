@@ -52,8 +52,6 @@ def get_sa_cifar10_poisoned_data(
         gpu_id (int, optional): CUDA device identifier. Defaults to 0.
         optimizer (torch.optim.Optimizer, optional): Custom optimizer for fine-tuning clean model. Defaults to None.
     """
-    CUDA_VISIBLE_DEVICES = str(gpu_id) 
-    os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
     torch.manual_seed(global_seed)
     np.random.seed(global_seed)
     random.seed(global_seed)
@@ -210,6 +208,7 @@ def get_sa_cifar10_poisoned_data(
     return poisoned_train_dataset, test_dataset, poisoned_test_dataset, poison_indices 
     
     
+  
 def get_sa_slt_10_poisoned_data(
     poison_ratio=10, 
     target_class = 1, 
@@ -221,13 +220,12 @@ def get_sa_slt_10_poisoned_data(
     gpu_id=0, 
     optimizer = None
     ):
-    CUDA_VISIBLE_DEVICES = str(gpu_id) 
-    os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
     torch.manual_seed(global_seed)
     np.random.seed(global_seed)
     random.seed(global_seed)
     
     poison_ratio = poison_ratio / 100.0
+    
     transform = Compose([
         Resize((224, 224)), 
         ToTensor(),  
@@ -251,10 +249,8 @@ def get_sa_slt_10_poisoned_data(
             transformed_labels.append(labels)
         return torch.cat(transformed_data), torch.cat(transformed_labels)
 
-    x_train, y_train = collect_transformed_data(train_loader)
     x_test, y_test = collect_transformed_data(test_loader)
-    x_train, y_train, x_test, y_test = x_train.numpy(), y_train.numpy(), x_test.numpy(), y_test.numpy()
-    y_train = np.eye(10)[y_train]
+    x_test, y_test = x_test.numpy(), y_test.numpy()
     y_test = np.eye(10)[y_test]
 
 
@@ -282,38 +278,8 @@ def get_sa_slt_10_poisoned_data(
 
         return x_set
     
-    class CustomViT(ViT):
-        def __init__(self, *args, **kwargs):
-            super(CustomViT, self).__init__(*args, **kwargs)
-            # Resize positional embeddings once during initialization
-            self._resize_positional_embeddings()
-
-        def _resize_positional_embeddings(self):
-            num_patches = (224 // 16) ** 2  # 224x224 image with 16x16 patches
-            seq_length = num_patches + 1  # +1 for the class token
-            pos_embedding = self.positional_embedding.pos_embedding
-
-            if seq_length != pos_embedding.size(1):
-                print(f"Resizing positional embeddings from {pos_embedding.size(1)} to {seq_length}")
-                self.positional_embedding.pos_embedding = nn.Parameter(
-                    F.interpolate(pos_embedding.unsqueeze(0), size=(seq_length, pos_embedding.size(2)), mode='nearest').squeeze(0)
-                )
-
-        def forward(self, x):
-            b, _, _, _ = x.shape
-            x = self.patch_embedding(x)  # Apply patch embedding
-            x = x.flatten(2).transpose(1, 2)  # Flatten patches and transpose
-            class_tokens = self.class_token.expand(b, -1, -1)
-            x = torch.cat((class_tokens, x), dim=1)
             
-            # Positional embeddings have already been resized
-            x = x + self.positional_embedding(x)
-            x = self.transformer(x)
-            x = self.norm(x)
-            return self.fc(x[:, 0])
-            
-
-
+    print("poison_ratio: ", poison_ratio)
     indices_path = datasets_root_dir + f'indices_poison_sa_vit_{target_class}_{source_class}_16_{poison_ratio}_32.npy'
     x_poison_path = datasets_root_dir + f'x_poison_sa_vit_{target_class}_{source_class}_16_{poison_ratio}_32.npy'
     y_poison_path = datasets_root_dir + f'y_poison_sa_vit_{target_class}_{source_class}_16_{poison_ratio}_32.npy'
@@ -322,62 +288,21 @@ def get_sa_slt_10_poisoned_data(
     y_poison = np.load(y_poison_path)
     poison_indices = np.load(indices_path) 
     
+    index_source_train = np.where(y_poison.argmax(axis=1)==target_class)[0]
+    poison_indices = index_source_train[poison_indices]
+    
     all_indices = np.arange(len(x_poison))
     poisoned_train_dataset = TensorDataset(torch.tensor(x_poison), torch.tensor(y_poison.argmax(axis=1)), torch.tensor(all_indices))
-    test_dataset = TensorDataset(torch.tensor(x_test).float(), torch.tensor(y_test.argmax(axis=1)).long())
-    
+    test_dataset = TensorDataset(torch.tensor(x_test), torch.tensor(y_test.argmax(axis=1)))
     index_source_test = np.where(y_test.argmax(axis=1)==source_class)[0]
     x_test_trigger = x_test[index_source_test]
     x_test_trigger = add_trigger_patch(x_test_trigger,"fixed")
     y_test_trigger = np.ones(len(x_test_trigger))*target_class
 
-
-    index_source_train = np.where(y_poison.argmax(axis=1)==target_class)[0]
-    poison_indices = index_source_train[poison_indices]
-    
-    poisoned_test_dataset = TensorDataset(torch.tensor(x_test_trigger).float(), torch.tensor(y_test_trigger).long())
-    
-    
-    class TransformedTensorDataset(Dataset):
-        def __init__(self, tensor_dataset, transform=None):
-            self.tensor_dataset = tensor_dataset
-            self.transform = transform
-            self.to_pil = ToPILImage()
-
-        def __len__(self):
-            return len(self.tensor_dataset)
-
-        def __getitem__(self, idx):
-            data = self.tensor_dataset[idx]
-            try:
-                image, label = data
-                image = self.to_pil(image)
-                if self.transform:
-                    image = self.transform(image)
-                return image, label
-            except:
-                image, label, index = data
-                image = self.to_pil(image)
-                if self.transform:
-                    image = self.transform(image)
-                return image, label, index
-    
-    
-
-    transform_train = Compose([
-        ToTensor(),
-        # RandomCrop(32, padding=4),
-        RandomHorizontalFlip(),
-    ])
-    
-    transform_test = Compose([
-        ToTensor(),
-    ])
-    
-    poisoned_train_dataset = TransformedTensorDataset(poisoned_train_dataset, transform=transform_train)
-    test_dataset = TransformedTensorDataset(test_dataset, transform=transform_test)
-    poisoned_test_dataset = TransformedTensorDataset(poisoned_test_dataset, transform=transform_test)
+    poisoned_test_dataset = TensorDataset(torch.tensor(x_test_trigger), torch.tensor(y_test_trigger))
     
     return poisoned_train_dataset, test_dataset, poisoned_test_dataset, poison_indices 
+    
+    
     
     

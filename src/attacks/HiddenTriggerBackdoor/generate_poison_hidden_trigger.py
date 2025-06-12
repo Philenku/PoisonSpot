@@ -48,8 +48,6 @@ def get_ht_cifar10_poisoned_data(
     """  
     
     
-    CUDA_VISIBLE_DEVICES = str(gpu_id)
-    os.environ['CUDA_VISIBLE_DEVICES'] = CUDA_VISIBLE_DEVICES
     
     torch.manual_seed(global_seed)
     np.random.seed(global_seed)
