@@ -31,7 +31,7 @@ bs_sl: 128
 target_class: 1
 source_class: 0
 pr_tgt: 10
-pr_sus: 10
+pr_sus: 50
 eps: 16
 vis: 255
 

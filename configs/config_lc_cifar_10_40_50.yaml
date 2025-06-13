@@ -1,18 +1,19 @@
-# which attack to run
-attack: sa 
 
-# dataset / model choices 
-dataset: CIFAR10 
-model: ResNet18 
-scenario: from_scratch 
- 
+# which attack to run
+attack: lc
+
+# dataset / model choices
+dataset: CIFAR10
+model: ResNet18
+scenario: from_scratch
+
 # data paths
-dataset_dir: src/data/ 
-clean_model_path: ./src/saved_models/resnet18_200_clean.pth 
+dataset_dir: src/data/
+clean_model_path: ./src/saved_models/resnet18_200_clean.pth
 saved_models_path: ./src/saved_models/
 results_path: ./src/results/
 prov_path: ./src/Training_Prov_Data/
-exp: 
+exp:
 
 # training schedule
 epochs: 200
@@ -21,18 +22,17 @@ ep_bl_base: 200
 ep_sl: 10
 ep_sl_base: 200
 
-
 # batch sizes
 bs: 128
 bs_bl: 128
 bs_sl: 128
 
 # attack parameters
-target_class: 1
+target_class: 2
 source_class: 0
-pr_tgt: 10
-pr_sus: 10
-eps: 16
+pr_tgt: 40
+pr_sus: 50
+eps: 8
 vis: 255
 
 # which phases to run
@@ -46,7 +46,7 @@ get_result: false
 force: false
 
 # misc
-gpu_id: 1
+gpu_id: 0
 global_seed: 545
 lr: 0.1
 opt: sgd

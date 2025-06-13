@@ -5,7 +5,7 @@ attack: sa
 dataset: CIFAR10 
 model: ResNet18 
 scenario: from_scratch 
- 
+
 # data paths
 dataset_dir: src/data/ 
 clean_model_path: ./src/saved_models/resnet18_200_clean.pth 
